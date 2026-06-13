@@ -103,15 +103,17 @@ export function SheetShell({
         <span className="w-14" />
       </div>
 
-      <div className="flex flex-1 flex-col items-center justify-center px-6">
-        <span className="text-sm text-zinc-500">{amountLabel}</span>
-        <span className="mt-2 text-6xl font-semibold tabular-nums" style={{ color: accent }}>
-          {formatAmount(cents)}
-        </span>
-        {fields}
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="flex min-h-full flex-col items-center justify-center px-6 py-5">
+          <span className="text-sm text-zinc-500">{amountLabel}</span>
+          <span className="mt-2 text-6xl font-semibold tabular-nums" style={{ color: accent }}>
+            {formatAmount(cents)}
+          </span>
+          {fields}
+        </div>
       </div>
 
-      {chips}
+      {chips && <div className="border-t border-white/[0.06] pt-3">{chips}</div>}
       <div className="pb-[env(safe-area-inset-bottom)]">
         <Keypad onPress={onPress} />
       </div>
