@@ -8,15 +8,9 @@ import type { Expense } from './types'
 
 export function Summary({ expenses }: { expenses: Expense[] }) {
   const { total, slices } = useMemo(() => {
-    const now = new Date()
-    const monthly = expenses.filter((expense) => {
-      const date = new Date(expense.spentAt)
-      return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()
-    })
-
     const byCategory = new Map<string, number>()
     let sum = 0
-    for (const expense of monthly) {
+    for (const expense of expenses) {
       sum += expense.amount
       byCategory.set(expense.category, (byCategory.get(expense.category) ?? 0) + expense.amount)
     }
@@ -24,7 +18,9 @@ export function Summary({ expenses }: { expenses: Expense[] }) {
     const data = CATEGORIES.map((category) => ({
       ...category,
       value: byCategory.get(category.id) ?? 0,
-    })).filter((slice) => slice.value > 0)
+    }))
+      .filter((slice) => slice.value > 0)
+      .sort((a, b) => b.value - a.value)
 
     return { total: sum, slices: data }
   }, [expenses])
@@ -32,7 +28,7 @@ export function Summary({ expenses }: { expenses: Expense[] }) {
   return (
     <section className="px-5 pt-6">
       <div className="rounded-3xl border border-white/[0.07] bg-white/[0.03] p-6">
-        <p className="text-xs font-medium tracking-widest text-zinc-500 uppercase">This month</p>
+        <p className="text-xs font-medium tracking-widest text-zinc-500 uppercase">Spent</p>
         <div className="mt-3 flex items-center gap-5">
           <div className="relative h-28 w-28 shrink-0">
             {slices.length > 0 ? (
@@ -51,16 +47,35 @@ export function Summary({ expenses }: { expenses: Expense[] }) {
           </div>
           <div className="min-w-0">
             <p className="text-4xl font-semibold tabular-nums text-zinc-50">{formatAmount(total)}</p>
-            <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
-              {slices.slice(0, 4).map((slice) => (
-                <li key={slice.id} className="flex items-center gap-1.5 text-xs text-zinc-400">
-                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: slice.color }} />
-                  {getCategory(slice.id).label}
-                </li>
-              ))}
-            </ul>
+            <p className="mt-1 text-xs text-zinc-500">
+              {slices.length} {slices.length === 1 ? 'category' : 'categories'}
+            </p>
           </div>
         </div>
+
+        {slices.length > 0 && (
+          <ul className="mt-5 space-y-2 border-t border-white/[0.06] pt-4">
+            {slices.map((slice) => {
+              const category = getCategory(slice.id)
+              const pct = Math.round((slice.value / total) * 100)
+              return (
+                <li key={slice.id} className="flex items-center gap-3 text-sm">
+                  <span
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm"
+                    style={{ backgroundColor: `${slice.color}22` }}
+                  >
+                    {category.emoji}
+                  </span>
+                  <span className="flex-1 truncate text-zinc-300">{category.label}</span>
+                  <span className="w-9 text-right text-xs tabular-nums text-zinc-500">{pct}%</span>
+                  <span className="w-20 text-right font-medium tabular-nums text-zinc-100">
+                    {formatAmount(slice.value)}
+                  </span>
+                </li>
+              )
+            })}
+          </ul>
+        )}
       </div>
     </section>
   )

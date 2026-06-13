@@ -54,3 +54,25 @@ export interface NewInstallment {
   count: number
   category: string
 }
+
+export interface FixedPayment {
+  id: string
+  recurringId: string
+  month: string
+}
+
+export type SavingKind = 'deposit' | 'withdraw'
+
+export interface Saving {
+  id: string
+  amount: number
+  note: string | null
+  kind: SavingKind
+  savedAt: string
+}
+
+export interface NewSaving {
+  amount: number
+  kind: SavingKind
+  note?: string
+}

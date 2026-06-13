@@ -7,6 +7,7 @@ const OPTIONS: { kind: SheetKind; label: string; emoji: string; color: string }[
   { kind: 'income', label: 'Income', emoji: '💰', color: '#10b981' },
   { kind: 'fixed', label: 'Fixed monthly', emoji: '🔁', color: '#8b5cf6' },
   { kind: 'installment', label: 'Installment plan', emoji: '💳', color: '#06b6d4' },
+  { kind: 'savings', label: 'Savings', emoji: '🐷', color: '#f59e0b' },
 ]
 
 export function AddMenu({

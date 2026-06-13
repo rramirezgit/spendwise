@@ -61,7 +61,7 @@ export function InstallmentList() {
                 <button
                   onClick={() => remove.mutate(plan.id)}
                   aria-label="Delete plan"
-                  className="text-zinc-600 opacity-0 transition-opacity group-hover:opacity-100 active:text-red-400"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-zinc-600 active:bg-white/5 active:text-rose-400"
                 >
                   ✕
                 </button>

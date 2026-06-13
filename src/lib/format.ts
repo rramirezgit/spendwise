@@ -22,3 +22,7 @@ export function formatDayLabel(iso: string): string {
   if (sameDay(date, yesterday)) return 'Yesterday'
   return date.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'short' })
 }
+
+export function formatMonthLabel(date: Date): string {
+  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+}

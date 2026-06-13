@@ -19,6 +19,8 @@ model User {
   incomes       Income[]
   recurring     RecurringExpense[]
   plans         Installment[]
+  fixedPayments FixedPayment[]
+  savings       Saving[]
 }
 
 model Account {
@@ -80,16 +82,30 @@ model Income {
 }
 
 model RecurringExpense {
-  id        String   @id @default(cuid())
+  id        String         @id @default(cuid())
   amount    Int
   category  String
   note      String?
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
+  active    Boolean        @default(true)
+  createdAt DateTime       @default(now())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payments  FixedPayment[]
 
   @@index([userId])
+}
+
+model FixedPayment {
+  id          String           @id @default(cuid())
+  recurringId String
+  month       String
+  paidAt      DateTime         @default(now())
+  userId      String
+  recurring   RecurringExpense @relation(fields: [recurringId], references: [id], onDelete: Cascade)
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([recurringId, month])
+  @@index([userId, month])
 }
 
 model Installment {
@@ -104,4 +120,17 @@ model Installment {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model Saving {
+  id        String   @id @default(cuid())
+  amount    Int
+  note      String?
+  kind      String   @default("deposit")
+  savedAt   DateTime @default(now())
+  createdAt DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, savedAt])
 }

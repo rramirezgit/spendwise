@@ -9,10 +9,12 @@ import {
   useAddIncome,
   useAddRecurring,
   useAddInstallment,
+  useAddSaving,
 } from '../queries'
 import { SheetShell, CategoryChips, useAmount } from './primitives'
+import type { SavingKind } from '../types'
 
-export type SheetKind = 'expense' | 'income' | 'fixed' | 'installment'
+export type SheetKind = 'expense' | 'income' | 'fixed' | 'installment' | 'savings'
 
 const fieldClass =
   'mt-6 w-full max-w-xs rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-center text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none'
@@ -21,6 +23,7 @@ export function AddSheet({ kind, onClose }: { kind: SheetKind; onClose: () => vo
   if (kind === 'income') return <IncomeSheet onClose={onClose} />
   if (kind === 'fixed') return <FixedSheet onClose={onClose} />
   if (kind === 'installment') return <InstallmentSheet onClose={onClose} />
+  if (kind === 'savings') return <SavingsSheet onClose={onClose} />
   return <ExpenseSheet onClose={onClose} />
 }
 
@@ -191,6 +194,65 @@ function InstallmentSheet({ onClose }: { onClose: () => void }) {
         </>
       }
       chips={<CategoryChips value={category} onChange={setCategory} />}
+    />
+  )
+}
+
+function SavingsSheet({ onClose }: { onClose: () => void }) {
+  const { cents, press } = useAmount()
+  const [kind, setKind] = useState<SavingKind>('deposit')
+  const [note, setNote] = useState('')
+  const add = useAddSaving()
+  const accent = kind === 'deposit' ? '#f59e0b' : '#f43f5e'
+
+  return (
+    <SheetShell
+      title="Savings"
+      amountLabel={kind === 'deposit' ? 'Deposit' : 'Withdraw'}
+      onClose={onClose}
+      cents={cents}
+      accent={accent}
+      onPress={press}
+      canSave={cents > 0}
+      saveLabel={kind === 'deposit' ? 'Add to savings' : 'Withdraw'}
+      onSave={() => {
+        add.mutate({ amount: cents, kind, note: note.trim() || undefined })
+        onClose()
+      }}
+      fields={
+        <>
+          <input
+            name="note"
+            aria-label="Note"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Note (e.g. Emergency fund)"
+            className={`${fieldClass} focus:border-amber-500/50`}
+          />
+          <div className="mt-4 flex gap-2">
+            <button
+              onClick={() => setKind('deposit')}
+              className={`rounded-full border px-4 py-2 text-sm ${
+                kind === 'deposit'
+                  ? 'border-amber-500 bg-amber-500/15 text-amber-300'
+                  : 'border-white/10 text-zinc-400'
+              }`}
+            >
+              ＋ Deposit
+            </button>
+            <button
+              onClick={() => setKind('withdraw')}
+              className={`rounded-full border px-4 py-2 text-sm ${
+                kind === 'withdraw'
+                  ? 'border-rose-500 bg-rose-500/15 text-rose-300'
+                  : 'border-white/10 text-zinc-400'
+              }`}
+            >
+              － Withdraw
+            </button>
+          </div>
+        </>
+      }
     />
   )
 }

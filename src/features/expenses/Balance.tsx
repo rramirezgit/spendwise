@@ -10,28 +10,29 @@ interface BalanceProps {
   incomes: Income[]
   recurring: RecurringExpense[]
   installments: Installment[]
+  month: Date
 }
 
-export function Balance({ expenses, incomes, recurring, installments }: BalanceProps) {
+export function Balance({ expenses, incomes, recurring, installments, month }: BalanceProps) {
   const stats = useMemo(() => {
     const income = incomes
-      .filter((item) => item.recurring || isCurrentMonth(item.receivedAt))
+      .filter((item) => item.recurring || isCurrentMonth(item.receivedAt, month))
       .reduce((sum, item) => sum + item.amount, 0)
 
     const variable = expenses
-      .filter((item) => isCurrentMonth(item.spentAt))
+      .filter((item) => isCurrentMonth(item.spentAt, month))
       .reduce((sum, item) => sum + item.amount, 0)
 
     const fixed = recurring.reduce((sum, item) => sum + item.amount, 0)
 
     const cuotas = installments.reduce(
-      (sum, plan) => sum + installmentChargedThisMonth(plan),
+      (sum, plan) => sum + installmentChargedThisMonth(plan, month),
       0
     )
 
     const spent = variable + fixed + cuotas
     return { income, variable, fixed, cuotas, spent, balance: income - spent }
-  }, [expenses, incomes, recurring, installments])
+  }, [expenses, incomes, recurring, installments, month])
 
   const positive = stats.balance >= 0
 
@@ -39,7 +40,7 @@ export function Balance({ expenses, incomes, recurring, installments }: BalanceP
     <section className="px-5 pt-6">
       <div className="rounded-3xl border border-white/[0.07] bg-white/[0.03] p-6">
         <p className="text-xs font-medium tracking-widest text-zinc-500 uppercase">
-          Balance this month
+          Net balance
         </p>
         <p
           className={`mt-2 text-5xl font-semibold tabular-nums ${positive ? 'text-emerald-400' : 'text-rose-400'}`}

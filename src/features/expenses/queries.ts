@@ -10,6 +10,9 @@ import type {
   NewRecurring,
   Installment,
   NewInstallment,
+  FixedPayment,
+  Saving,
+  NewSaving,
 } from './types'
 
 async function getJson<T>(url: string): Promise<T> {
@@ -123,3 +126,50 @@ export const useAddInstallment = () =>
     category: input.category,
   }))
 export const useDeleteInstallment = () => useDelete('installments', '/api/installments')
+
+export const useSavings = () => useList<Saving>('savings', '/api/savings')
+export const useAddSaving = () =>
+  useCreate<NewSaving, Saving>('savings', '/api/savings', (input) => ({
+    id: tempId(),
+    amount: input.amount,
+    kind: input.kind,
+    note: input.note ?? null,
+    savedAt: new Date().toISOString(),
+  }))
+export const useDeleteSaving = () => useDelete('savings', '/api/savings')
+
+export const useFixedPayments = (month: string) =>
+  useQuery({
+    queryKey: ['fixed-payments', month],
+    queryFn: () => getJson<FixedPayment[]>(`/api/recurring/payments?month=${month}`),
+  })
+
+export function useTogglePaid(month: string) {
+  const queryClient = useQueryClient()
+  const key = ['fixed-payments', month]
+  return useMutation({
+    mutationFn: async ({ recurringId, paid }: { recurringId: string; paid: boolean }) => {
+      if (paid) {
+        await postJson('/api/recurring/payments', { recurringId, month })
+        return
+      }
+      const res = await fetch(`/api/recurring/payments?recurringId=${recurringId}&month=${month}`, {
+        method: 'DELETE',
+      })
+      if (!res.ok) throw new Error('Failed to update payment')
+    },
+    onMutate: async ({ recurringId, paid }) => {
+      await queryClient.cancelQueries({ queryKey: key })
+      const previous = queryClient.getQueryData<FixedPayment[]>(key) ?? []
+      const next = paid
+        ? [...previous, { id: `temp-${recurringId}`, recurringId, month }]
+        : previous.filter((payment) => payment.recurringId !== recurringId)
+      queryClient.setQueryData<FixedPayment[]>(key, next)
+      return { previous }
+    },
+    onError: (_e, _v, context) => {
+      if (context?.previous) queryClient.setQueryData(key, context.previous)
+    },
+    onSettled: () => void queryClient.invalidateQueries({ queryKey: key }),
+  })
+}

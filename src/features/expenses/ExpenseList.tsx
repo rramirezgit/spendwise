@@ -24,7 +24,7 @@ export function ExpenseList({ expenses }: { expenses: Expense[] }) {
     return (
       <div className="px-5 py-16 text-center">
         <p className="text-4xl">🧾</p>
-        <p className="mt-3 text-sm text-zinc-500">No expenses yet. Tap + to add your first one.</p>
+        <p className="mt-3 text-sm text-zinc-500">No expenses in this period.</p>
       </div>
     )
   }
@@ -65,7 +65,7 @@ export function ExpenseList({ expenses }: { expenses: Expense[] }) {
                     <button
                       onClick={() => deleteExpense.mutate(expense.id)}
                       aria-label="Delete expense"
-                      className="text-zinc-600 opacity-0 transition-opacity group-hover:opacity-100 active:text-red-400"
+                      className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-600 active:bg-white/5 active:text-rose-400"
                     >
                       ✕
                     </button>
