@@ -16,6 +16,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#08080b",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({
@@ -24,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} h-full antialiased`}>
+    <html lang="en" style={{ colorScheme: "dark" }} className={`${geistSans.variable} h-full antialiased`}>
       <body className="min-h-full bg-zinc-950 text-zinc-200">
         <Providers>{children}</Providers>
       </body>
