@@ -12,6 +12,7 @@ const createSchema = z.object({
 
 export async function GET() {
   const userId = await getCurrentUserId()
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const expenses = await prisma.expense.findMany({
     where: { userId },
     orderBy: { spentAt: 'desc' },
@@ -22,6 +23,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const userId = await getCurrentUserId()
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const parsed = createSchema.safeParse(await request.json())
   if (!parsed.success) {
     return NextResponse.json({ error: 'Invalid expense' }, { status: 400 })

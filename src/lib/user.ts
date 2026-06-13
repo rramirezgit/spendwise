@@ -1,12 +1,6 @@
-import { prisma } from './prisma'
+import { auth } from '@/auth'
 
-const DEMO_EMAIL = 'demo@spendwise.app'
-
-export async function getCurrentUserId(): Promise<string> {
-  const user = await prisma.user.upsert({
-    where: { email: DEMO_EMAIL },
-    update: {},
-    create: { email: DEMO_EMAIL, name: 'Demo' },
-  })
-  return user.id
+export async function getCurrentUserId(): Promise<string | null> {
+  const session = await auth()
+  return session?.user?.id ?? null
 }

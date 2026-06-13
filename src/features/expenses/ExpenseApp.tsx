@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { useSession, signOut } from 'next-auth/react'
+import { SignIn } from '@/features/auth/SignIn'
 import { useExpenses, useIncomes, useRecurring, useInstallments } from './queries'
 import { Balance } from './Balance'
 import { Summary } from './Summary'
@@ -21,6 +23,7 @@ const TABS: { id: Tab; label: string; emoji: string }[] = [
 ]
 
 export function ExpenseApp() {
+  const { data: session, status } = useSession()
   const [tab, setTab] = useState<Tab>('home')
   const [menuOpen, setMenuOpen] = useState(false)
   const [sheet, setSheet] = useState<SheetKind | null>(null)
@@ -30,11 +33,38 @@ export function ExpenseApp() {
   const recurring = useRecurring()
   const installments = useInstallments()
 
+  if (status === 'loading') {
+    return (
+      <div className="flex min-h-dvh items-center justify-center text-2xl">💸</div>
+    )
+  }
+
+  if (status === 'unauthenticated') {
+    return <SignIn />
+  }
+
   return (
     <div className="mx-auto min-h-dvh w-full max-w-md">
-      <header className="px-5 pt-7">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-50">Spendwise</h1>
-        <p className="text-sm text-zinc-500">Tap, pick, done.</p>
+      <header className="flex items-start justify-between px-5 pt-7">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-50">Spendwise</h1>
+          <p className="text-sm text-zinc-500">Tap, pick, done.</p>
+        </div>
+        <button
+          onClick={() => signOut({ callbackUrl: '/' })}
+          title="Sign out"
+          className="mt-1 flex items-center gap-2 rounded-full border border-white/10 py-1 pr-3 pl-1 text-xs text-zinc-400 active:bg-white/5"
+        >
+          {session?.user?.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={session.user.image} alt="" className="h-6 w-6 rounded-full" />
+          ) : (
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700 text-[10px] uppercase">
+              {session?.user?.name?.[0] ?? '?'}
+            </span>
+          )}
+          Sign out
+        </button>
       </header>
 
       {tab === 'home' && (
