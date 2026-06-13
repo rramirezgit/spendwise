@@ -8,11 +8,14 @@ datasource db {
 }
 
 model User {
-  id       String    @id @default(cuid())
-  email    String    @unique
-  name     String?
-  image    String?
-  expenses Expense[]
+  id         String             @id @default(cuid())
+  email      String             @unique
+  name       String?
+  image      String?
+  expenses   Expense[]
+  incomes    Income[]
+  recurring  RecurringExpense[]
+  plans      Installment[]
 }
 
 model Expense {
@@ -26,4 +29,44 @@ model Expense {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, spentAt])
+}
+
+model Income {
+  id         String   @id @default(cuid())
+  amount     Int
+  source     String?
+  recurring  Boolean  @default(false)
+  receivedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, receivedAt])
+}
+
+model RecurringExpense {
+  id        String   @id @default(cuid())
+  amount    Int
+  category  String
+  note      String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Installment {
+  id          String   @id @default(cuid())
+  description String
+  totalAmount Int
+  count       Int
+  startMonth  DateTime @default(now())
+  category    String
+  createdAt   DateTime @default(now())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

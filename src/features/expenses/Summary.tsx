@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
+import { PieChart, Pie, Cell } from 'recharts'
 import { CATEGORIES, getCategory } from '@/lib/categories'
 import { formatAmount } from '@/lib/format'
 import type { Expense } from './types'
@@ -36,15 +36,13 @@ export function Summary({ expenses }: { expenses: Expense[] }) {
         <div className="mt-3 flex items-center gap-5">
           <div className="relative h-28 w-28 shrink-0">
             {slices.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={slices} dataKey="value" innerRadius={38} outerRadius={56} stroke="none" paddingAngle={2}>
-                    {slices.map((slice) => (
-                      <Cell key={slice.id} fill={slice.color} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
+              <PieChart width={112} height={112}>
+                <Pie data={slices} dataKey="value" innerRadius={38} outerRadius={56} stroke="none" paddingAngle={2}>
+                  {slices.map((slice) => (
+                    <Cell key={slice.id} fill={slice.color} />
+                  ))}
+                </Pie>
+              </PieChart>
             ) : (
               <div className="flex h-full w-full items-center justify-center rounded-full border border-dashed border-white/10 text-2xl">
                 💸
