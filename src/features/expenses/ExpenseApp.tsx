@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import type { Session } from 'next-auth'
 import { useSession, signOut } from 'next-auth/react'
 import { SignIn } from '@/features/auth/SignIn'
 import { periodRange, withinRange } from '@/lib/finance'
@@ -28,6 +29,19 @@ const TABS: { id: Tab; label: string; emoji: string }[] = [
 
 export function ExpenseApp() {
   const { data: session, status } = useSession()
+
+  if (status === 'loading') {
+    return <div className="flex min-h-dvh items-center justify-center text-2xl">💸</div>
+  }
+
+  if (status === 'unauthenticated' || !session) {
+    return <SignIn />
+  }
+
+  return <Dashboard session={session} />
+}
+
+function Dashboard({ session }: { session: Session }) {
   const [tab, setTab] = useState<Tab>('home')
   const [menuOpen, setMenuOpen] = useState(false)
   const [sheet, setSheet] = useState<SheetKind | null>(null)
@@ -42,14 +56,6 @@ export function ExpenseApp() {
     const range = periodRange(period.kind, period.anchor)
     return (expenses.data ?? []).filter((expense) => withinRange(expense.spentAt, range))
   }, [expenses.data, period])
-
-  if (status === 'loading') {
-    return <div className="flex min-h-dvh items-center justify-center text-2xl">💸</div>
-  }
-
-  if (status === 'unauthenticated') {
-    return <SignIn />
-  }
 
   return (
     <div className="mx-auto min-h-dvh w-full max-w-md">
