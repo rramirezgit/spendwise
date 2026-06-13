@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-16-000?style=flat-square&logo=nextdotjs&logoColor=white" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=white" />
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white" />
+  <img src="https://img.shields.io/badge/Prisma-6-2D3748?style=flat-square&logo=prisma&logoColor=white" />
+  <img src="https://img.shields.io/badge/TanStack_Query-5-FF4154?style=flat-square" />
+</p>
 
-## Getting Started
+<h1 align="center">Spendwise</h1>
 
-First, run the development server:
+<p align="center">
+  <strong>Log any expense in two taps.</strong><br/>
+  <em>A mobile-first personal expense tracker — full-stack Next.js, Prisma and optimistic UI.</em>
+</p>
+
+![Spendwise demo](docs/demo.gif)
+
+---
+
+## What it demonstrates
+
+A **full-stack** Next.js app (front and back in one codebase) focused on the one metric that matters in an expense tracker: how fast you can log a spend.
+
+- **Two-tap entry** — a custom numeric keypad, one-tap category chips and instant save. No forms, no friction.
+- **Optimistic UI** — TanStack Query inserts the expense into the cache before the request resolves and rolls back on error, so the list and monthly total update instantly.
+- **Mobile-first** — thumb-friendly keypad, floating action button, safe-area aware, works the same on web and phone.
+- **Visual classification** — nine categories with emoji + color, a monthly donut breakdown (Recharts) and day-grouped history.
+- **Money as integers** — amounts stored in cents to avoid floating-point errors.
+
+## Architecture
+
+This is the canonical "Next.js is full-stack" setup — **no separate backend**:
+
+- **UI + API in one app**: React components render the client; Route Handlers (`app/api/expenses`) are the backend, validated with Zod and persisted with Prisma. On Vercel they deploy as serverless functions automatically.
+- **Data layer**: TanStack Query owns server state with optimistic add/delete mutations; React state only holds UI.
+- **Database**: Prisma + PostgreSQL (Neon in production). SQLite locally so the app runs with zero external setup.
+- **Feature-based structure**: `src/features/expenses` is self-contained; `src/lib` holds Prisma, categories, formatting.
+
+## Run locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+git clone https://github.com/rramirezgit/spendwise.git
+cd spendwise
+pnpm install
+
+cp .env.example .env          # local dev uses SQLite (DATABASE_URL="file:./dev.db")
+npx prisma migrate dev
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [localhost:3000](http://localhost:3000). The dev build uses a built-in demo user, so there is no login step to preview it.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy to production (Vercel + Neon + Google login)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Everything ships as **one Vercel project**. Steps:
 
-## Learn More
+1. **Database — Neon** (free): create a Postgres database, copy the connection string. In `prisma/schema.prisma` switch `provider = "sqlite"` to `provider = "postgresql"`, then `npx prisma migrate deploy`.
+2. **Auth — Google**: create OAuth credentials in Google Cloud Console, then add Auth.js (`next-auth`) with the Google provider and the Prisma adapter (the `User` model is already in the schema).
+3. **Vercel**: import the repo, set env vars `DATABASE_URL`, `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`. Deploy.
 
-To learn more about Next.js, take a look at the following resources:
+## Commands
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm dev       # Development server
+pnpm build     # Production build
+pnpm lint      # ESLint
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Stack
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Next.js 16 (App Router) · React 19 · TypeScript strict · Prisma 6 · PostgreSQL / SQLite · TanStack Query v5 · Zod · Recharts · Tailwind CSS 4
