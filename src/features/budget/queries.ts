@@ -113,3 +113,34 @@ export function useDeleteSaving() {
 
 export const useHistory = () =>
   useQuery({ queryKey: ['budget-history'], queryFn: () => getJson<HistoryMonth[]>('/api/budget/history') })
+
+export const useCategories = () =>
+  useQuery({
+    queryKey: ['budget-categories'],
+    queryFn: () => getJson<{ id: string; name: string; emoji: string }[]>('/api/budget/categories'),
+  })
+
+export function useAddCategory() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: { name: string; emoji: string }) =>
+      send<{ id: string; name: string; emoji: string }>('/api/budget/categories', 'POST', input),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['budget-categories'] }),
+  })
+}
+
+export function useDeleteCategory() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => send(`/api/budget/categories/${id}`, 'DELETE'),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['budget-categories'] }),
+  })
+}
+
+export function useUpdateBudget() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: { currency?: string; name?: string }) => send('/api/budget', 'PATCH', input),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['budget'] }),
+  })
+}

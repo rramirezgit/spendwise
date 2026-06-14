@@ -1,27 +1,31 @@
 'use client'
 
 import { signIn } from 'next-auth/react'
+import { useI18n, LanguageToggle } from '@/lib/i18n'
 
 export function SignIn() {
+  const { t } = useI18n()
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center px-8 text-center">
+      <div className="absolute top-5 right-5">
+        <LanguageToggle />
+      </div>
+
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500 text-3xl shadow-lg shadow-emerald-500/30">
-        💸
+        💑
       </div>
       <h1 className="mt-6 text-3xl font-semibold tracking-tight text-zinc-50">Spendwise</h1>
-      <p className="mt-2 text-sm text-zinc-500">
-        Track every expense in two taps. Sign in to keep your data private and synced.
-      </p>
+      <p className="mt-2 text-sm text-zinc-500">{t('signin_tagline')}</p>
 
       <button
         onClick={() => signIn('google', { callbackUrl: '/' })}
         className="mt-10 flex w-full items-center justify-center gap-3 rounded-2xl bg-white px-5 py-3.5 text-base font-medium text-zinc-900 active:scale-[0.98]"
       >
         <GoogleIcon />
-        Continue with Google
+        {t('signin_google')}
       </button>
 
-      <p className="mt-6 text-xs text-zinc-600">Free, private, no ads. Your data is yours.</p>
+      <p className="mt-6 text-xs text-zinc-600">{t('signin_footer')}</p>
     </div>
   )
 }

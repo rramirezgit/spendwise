@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import { useI18n, LanguageToggle } from '@/lib/i18n'
 import { useCreateBudget, useJoinBudget } from './queries'
 
 export function Onboarding() {
+  const { t } = useI18n()
   const create = useCreateBudget()
   const join = useJoinBudget()
   const [name, setName] = useState('Casa')
@@ -12,13 +14,15 @@ export function Onboarding() {
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-7 pb-10">
+      <div className="absolute top-5 right-5">
+        <LanguageToggle />
+      </div>
+
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500 text-3xl shadow-lg shadow-emerald-500/30">
         💑
       </div>
-      <h1 className="mt-6 text-3xl font-semibold tracking-tight text-zinc-50">Your shared budget</h1>
-      <p className="mt-2 text-sm text-zinc-500">
-        One monthly budget for two. Create it and invite your partner, or join with their code.
-      </p>
+      <h1 className="mt-6 text-3xl font-semibold tracking-tight text-zinc-50">{t('onb_title')}</h1>
+      <p className="mt-2 text-sm text-zinc-500">{t('onb_subtitle')}</p>
 
       <div className="mt-8 flex gap-1 rounded-full bg-white/[0.04] p-1">
         <button
@@ -27,7 +31,7 @@ export function Onboarding() {
             mode === 'create' ? 'bg-white/10 text-zinc-100' : 'text-zinc-500'
           }`}
         >
-          Create
+          {t('onb_create')}
         </button>
         <button
           onClick={() => setMode('join')}
@@ -35,7 +39,7 @@ export function Onboarding() {
             mode === 'join' ? 'bg-white/10 text-zinc-100' : 'text-zinc-500'
           }`}
         >
-          Join
+          {t('onb_join')}
         </button>
       </div>
 
@@ -44,8 +48,8 @@ export function Onboarding() {
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Budget name (e.g. Casa)"
-            aria-label="Budget name"
+            placeholder={t('onb_name_ph')}
+            aria-label={t('onb_name_ph')}
             className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50"
           />
           <button
@@ -53,7 +57,7 @@ export function Onboarding() {
             onClick={() => create.mutate(name.trim())}
             className="w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-semibold text-zinc-950 disabled:opacity-40"
           >
-            Create budget
+            {t('onb_create_btn')}
           </button>
         </div>
       ) : (
@@ -61,17 +65,17 @@ export function Onboarding() {
           <input
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            placeholder="Paste invite code"
-            aria-label="Invite code"
+            placeholder={t('onb_code_ph')}
+            aria-label={t('onb_code_ph')}
             className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50"
           />
-          {join.isError && <p className="text-xs text-rose-400">Budget not found. Check the code.</p>}
+          {join.isError && <p className="text-xs text-rose-400">{t('onb_not_found')}</p>}
           <button
             disabled={!code.trim() || join.isPending}
             onClick={() => join.mutate(code.trim())}
             className="w-full rounded-2xl bg-zinc-100 py-3.5 text-base font-semibold text-zinc-900 disabled:opacity-40"
           >
-            Join budget
+            {t('onb_join_btn')}
           </button>
         </div>
       )}

@@ -3,7 +3,6 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUserId } from '@/lib/user'
 import { getUserGroupId } from '@/lib/budget-server'
-import { CATEGORIES } from '@/lib/categories'
 
 export async function GET() {
   const userId = await getCurrentUserId()
@@ -21,7 +20,7 @@ export async function GET() {
 const createSchema = z.object({
   name: z.string().min(1).max(60),
   amount: z.number().int().positive(),
-  category: z.enum(CATEGORIES.map((category) => category.id) as [string, ...string[]]),
+  category: z.string().min(1).max(40),
   payerId: z.string().nullable().optional(),
   splitPaid: z.boolean().optional(),
   month: z.string().regex(/^\d{4}-\d{2}$/),

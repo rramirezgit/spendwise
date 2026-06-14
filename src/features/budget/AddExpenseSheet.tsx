@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { CATEGORIES } from '@/lib/categories'
-import { SheetShell, CategoryChips, useAmount } from './keypad'
+import { useI18n } from '@/lib/i18n'
+import { SheetShell, useAmount } from './keypad'
+import { CategoryPicker } from './CategoryPicker'
 import type { BudgetMember } from './types'
 
 const fieldClass =
@@ -22,7 +23,6 @@ export function AddExpenseSheet({
   placeholder,
   members,
   currentUserId,
-  defaultCategory,
   initial,
   onClose,
   onSubmit,
@@ -32,29 +32,28 @@ export function AddExpenseSheet({
   placeholder: string
   members: BudgetMember[]
   currentUserId: string
-  defaultCategory?: string
   initial?: ExpenseDraft
   onClose: () => void
   onSubmit: (draft: ExpenseDraft) => void
 }) {
+  const { t } = useI18n()
   const { cents, press } = useAmount(initial ? (initial.amount / 100).toString() : '')
   const [name, setName] = useState(initial?.name ?? '')
-  const [category, setCategory] = useState(initial?.category ?? defaultCategory ?? CATEGORIES[3].id)
+  const [category, setCategory] = useState(initial?.category ?? '')
   const [payer, setPayer] = useState<string>(
     initial ? (initial.splitPaid ? 'split' : initial.payerId ?? currentUserId) : currentUserId
   )
 
-  const label = (member: BudgetMember) => (member.userId === currentUserId ? 'You' : member.name)
+  const label = (member: BudgetMember) => (member.userId === currentUserId ? t('you') : member.name)
 
   return (
     <SheetShell
       title={title}
-      amountLabel="Amount"
       onClose={onClose}
       cents={cents}
       accent="#10b981"
       onPress={press}
-      canSave={cents > 0 && name.trim().length > 0}
+      canSave={cents > 0 && name.trim().length > 0 && category.length > 0}
       saveLabel={saveLabel}
       onSave={() => {
         onSubmit({
@@ -70,14 +69,14 @@ export function AddExpenseSheet({
         <>
           <input
             name="name"
-            aria-label="Name"
+            aria-label={t('name')}
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder={placeholder}
             className={fieldClass}
           />
           <div className="mt-5 w-full max-w-xs">
-            <p className="mb-2 text-xs text-zinc-500">Who pays?</p>
+            <p className="mb-2 text-xs text-zinc-500">{t('who_pays')}</p>
             <div className="flex flex-wrap gap-2">
               {members.map((member) => (
                 <button
@@ -100,13 +99,13 @@ export function AddExpenseSheet({
                     : 'border-white/10 text-zinc-400'
                 }`}
               >
-                ½ Half &amp; half
+                {t('half_half')}
               </button>
             </div>
           </div>
         </>
       }
-      chips={<CategoryChips value={category} onChange={setCategory} />}
+      chips={<CategoryPicker value={category} onChange={setCategory} />}
     />
   )
 }

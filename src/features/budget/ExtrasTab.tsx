@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { formatAmount } from '@/lib/format'
-import { useAddExtra, useUpdateExpense, useDeleteExpense } from './queries'
+import { useI18n, useMoney } from '@/lib/i18n'
+import { useAddExtra, useUpdateExpense, useDeleteExpense, useCategories } from './queries'
 import { ExpenseRow } from './ExpenseRow'
 import { AddExpenseSheet, type ExpenseDraft } from './AddExpenseSheet'
 import type { BudgetExpenseInfo, BudgetMember, MonthData } from './types'
@@ -18,6 +18,9 @@ export function ExtrasTab({
   members: BudgetMember[]
   currentUserId: string
 }) {
+  const { t } = useI18n()
+  const money = useMoney()
+  const { data: categories = [] } = useCategories()
   const addExtra = useAddExtra(month)
   const update = useUpdateExpense(month)
   const remove = useDeleteExpense(month)
@@ -29,16 +32,14 @@ export function ExtrasTab({
   return (
     <div className="px-5 pt-5 pb-28">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xs font-medium tracking-wider text-zinc-500 uppercase">Extra expenses</h2>
-        <span className="text-sm tabular-nums text-zinc-300">{formatAmount(total)}</span>
+        <h2 className="text-xs font-medium tracking-wider text-zinc-500 uppercase">{t('extras_title')}</h2>
+        <span className="text-sm tabular-nums text-zinc-300">{money(total)}</span>
       </div>
 
       {data.extras.length === 0 ? (
         <div className="py-14 text-center">
           <p className="text-4xl">🛒</p>
-          <p className="mt-3 text-sm text-zinc-500">
-            No extras this month. Add groceries, outings, repairs — anything outside the fixed bills.
-          </p>
+          <p className="mt-3 text-sm text-zinc-500">{t('extras_empty')}</p>
         </div>
       ) : (
         <ul className="space-y-1">
@@ -47,6 +48,7 @@ export function ExtrasTab({
               key={expense.id}
               expense={expense}
               members={members}
+              categories={categories}
               currentUserId={currentUserId}
               onTogglePaid={() => update.mutate({ id: expense.id, paid: !expense.paid })}
               onEdit={() => setEditing(expense)}
@@ -60,17 +62,16 @@ export function ExtrasTab({
         onClick={() => setAdding(true)}
         className="mt-4 w-full rounded-2xl border border-dashed border-white/15 py-3 text-sm text-zinc-300 active:bg-white/5"
       >
-        ＋ Add extra expense
+        ＋ {t('add_extra')}
       </button>
 
       {adding && (
         <AddExpenseSheet
-          title="New extra expense"
-          saveLabel="Add expense"
-          placeholder="What was it? (e.g. Groceries)"
+          title={t('new_extra')}
+          saveLabel={t('add_expense')}
+          placeholder={t('extra_name_ph')}
           members={members}
           currentUserId={currentUserId}
-          defaultCategory="groceries"
           onClose={() => setAdding(false)}
           onSubmit={(draft) => addExtra.mutate({ ...draft, month })}
         />
@@ -78,9 +79,9 @@ export function ExtrasTab({
 
       {editing && (
         <AddExpenseSheet
-          title="Edit expense"
-          saveLabel="Save changes"
-          placeholder="Name"
+          title={t('edit_expense')}
+          saveLabel={t('save_changes')}
+          placeholder={t('name')}
           members={members}
           currentUserId={currentUserId}
           initial={toDraft(editing)}

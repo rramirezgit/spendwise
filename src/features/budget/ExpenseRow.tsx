@@ -1,23 +1,24 @@
 'use client'
 
-import { getCategory } from '@/lib/categories'
-import { formatAmount } from '@/lib/format'
-import type { BudgetExpenseInfo, BudgetMember } from './types'
+import { useI18n, useMoney, type TKey } from '@/lib/i18n'
+import type { BudgetExpenseInfo, BudgetMember, Category } from './types'
 
 export function payerLabel(
   expense: { payerId: string | null; splitPaid: boolean },
   members: BudgetMember[],
-  currentUserId: string
+  currentUserId: string,
+  t: (key: TKey) => string
 ): string {
-  if (expense.splitPaid) return 'Half & half'
-  if (!expense.payerId) return 'Unassigned'
-  if (expense.payerId === currentUserId) return 'You'
+  if (expense.splitPaid) return t('half_half_label')
+  if (!expense.payerId) return t('unassigned')
+  if (expense.payerId === currentUserId) return t('you')
   return members.find((member) => member.userId === expense.payerId)?.name ?? 'Member'
 }
 
 export function ExpenseRow({
   expense,
   members,
+  categories,
   currentUserId,
   onTogglePaid,
   onEdit,
@@ -25,12 +26,15 @@ export function ExpenseRow({
 }: {
   expense: BudgetExpenseInfo
   members: BudgetMember[]
+  categories: Category[]
   currentUserId: string
   onTogglePaid: () => void
   onEdit: () => void
   onDelete: () => void
 }) {
-  const category = getCategory(expense.category)
+  const { t } = useI18n()
+  const money = useMoney()
+  const emoji = categories.find((category) => category.id === expense.category)?.emoji ?? '🏷️'
 
   return (
     <li
@@ -40,7 +44,7 @@ export function ExpenseRow({
     >
       <button
         onClick={onTogglePaid}
-        aria-label={expense.paid ? 'Mark as pending' : 'Mark as paid'}
+        aria-label={expense.paid ? t('pending') : t('paid')}
         aria-pressed={expense.paid}
         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 text-sm transition-colors ${
           expense.paid
@@ -54,16 +58,16 @@ export function ExpenseRow({
       <button onClick={onEdit} className="min-w-0 flex-1 text-left">
         <p className="truncate text-sm text-zinc-100">{expense.name}</p>
         <p className="truncate text-xs text-zinc-500">
-          {category.emoji} {payerLabel(expense, members, currentUserId)} · {expense.paid ? 'Paid' : 'Pending'}
+          {emoji} {payerLabel(expense, members, currentUserId, t)} · {expense.paid ? t('paid') : t('pending')}
         </p>
       </button>
 
       <button onClick={onEdit} className="text-sm font-medium tabular-nums text-zinc-100">
-        {formatAmount(expense.amount)}
+        {money(expense.amount)}
       </button>
       <button
         onClick={onDelete}
-        aria-label="Delete"
+        aria-label={t('delete')}
         className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-zinc-600 active:bg-white/5 active:text-rose-400"
       >
         ✕

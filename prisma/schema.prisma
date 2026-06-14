@@ -57,6 +57,7 @@ model VerificationToken {
 model Group {
   id         String          @id @default(cuid())
   name       String
+  currency   String          @default("ARS")
   inviteCode String          @unique
   createdAt  DateTime        @default(now())
   ownerId    String
@@ -65,6 +66,18 @@ model Group {
   fixedItems FixedItem[]
   expenses   BudgetExpense[]
   savings    GroupSaving[]
+  categories Category[]
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  groupId   String
+  name      String
+  emoji     String
+  sortOrder Int      @default(0)
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
 }
 
 model GroupMember {

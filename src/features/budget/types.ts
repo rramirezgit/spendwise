@@ -7,9 +7,16 @@ export interface BudgetMember {
 export interface Budget {
   id: string
   name: string
+  currency: string
   inviteCode: string
   ownerId: string
   members: BudgetMember[]
+}
+
+export interface Category {
+  id: string
+  name: string
+  emoji: string
 }
 
 export interface FixedTemplate {
