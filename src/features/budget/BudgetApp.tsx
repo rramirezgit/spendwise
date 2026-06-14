@@ -9,18 +9,16 @@ import { SignIn } from '@/features/auth/SignIn'
 import { useBudget, useMonth } from './queries'
 import { Onboarding } from './Onboarding'
 import { FixedTab } from './FixedTab'
-import { ExtrasTab } from './ExtrasTab'
-import { BalanceTab } from './BalanceTab'
+import { ControlTab } from './ControlTab'
 import { SavingsTab } from './SavingsTab'
 import { HistoryTab } from './HistoryTab'
 import { SettingsSheet } from './SettingsSheet'
 
-type Tab = 'fixed' | 'extras' | 'balance' | 'savings' | 'history'
+type Tab = 'fixed' | 'control' | 'savings' | 'history'
 
 const TAB_IDS: { id: Tab; emoji: string }[] = [
   { id: 'fixed', emoji: '🔁' },
-  { id: 'extras', emoji: '🛒' },
-  { id: 'balance', emoji: '⚖️' },
+  { id: 'control', emoji: '📊' },
   { id: 'savings', emoji: '🐷' },
   { id: 'history', emoji: '📅' },
 ]
@@ -63,7 +61,7 @@ function Dashboard() {
   const currentUserId = session?.user?.id ?? ''
   const data = budget.data!
   const members = data.members
-  const showMonthBar = tab === 'fixed' || tab === 'extras' || tab === 'balance'
+  const showMonthBar = tab === 'fixed' || tab === 'control'
 
   return (
     <CurrencyProvider value={data.currency}>
@@ -147,19 +145,14 @@ function Dashboard() {
             {tab === 'fixed' && monthData.data && (
               <FixedTab month={month} data={monthData.data} members={members} currentUserId={currentUserId} />
             )}
-            {tab === 'extras' && monthData.data && (
-              <ExtrasTab month={month} data={monthData.data} members={members} currentUserId={currentUserId} />
-            )}
-            {tab === 'balance' && monthData.data && (
-              <BalanceTab data={monthData.data} members={members} currentUserId={currentUserId} />
-            )}
+            {tab === 'control' && <ControlTab month={month} />}
             {tab === 'savings' && <SavingsTab />}
             {tab === 'history' && (
               <HistoryTab
                 onPick={(picked) => {
                   const [year, m] = picked.split('-').map(Number)
                   setAnchor(new Date(year, m - 1, 1))
-                  setTab('balance')
+                  setTab('fixed')
                 }}
               />
             )}

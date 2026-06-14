@@ -96,3 +96,11 @@ export interface NewExpense {
   payerId?: string | null
   splitPaid?: boolean
 }
+
+export interface DailyExpenseInfo {
+  id: string
+  amount: number
+  category: string
+  note: string | null
+  spentAt: string
+}

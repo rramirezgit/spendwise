@@ -20,6 +20,7 @@ model User {
   budgetPaid    BudgetExpense[] @relation("BudgetPayer")
   fixedPaid     FixedItem[]     @relation("FixedPayer")
   savingsBy     GroupSaving[]   @relation("SavingBy")
+  dailyExpenses DailyExpense[]  @relation("DailyUser")
 }
 
 model Account {
@@ -67,6 +68,7 @@ model Group {
   expenses   BudgetExpense[]
   savings    GroupSaving[]
   categories Category[]
+  daily      DailyExpense[]
 }
 
 model Category {
@@ -129,6 +131,22 @@ model BudgetExpense {
   payer       User?     @relation("BudgetPayer", fields: [payerId], references: [id])
 
   @@index([groupId, month])
+}
+
+model DailyExpense {
+  id        String   @id @default(cuid())
+  groupId   String
+  userId    String
+  month     String
+  amount    Int
+  category  String
+  note      String?
+  spentAt   DateTime @default(now())
+  createdAt DateTime @default(now())
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User     @relation("DailyUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([groupId, userId, month])
 }
 
 model GroupSaving {

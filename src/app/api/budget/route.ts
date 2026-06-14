@@ -15,7 +15,12 @@ export async function GET() {
 
   const group = await prisma.group.findUnique({
     where: { id: groupId },
-    include: { members: { include: { user: { select: { id: true, name: true, image: true } } } } },
+    include: {
+      members: {
+        orderBy: { joinedAt: 'asc' },
+        include: { user: { select: { id: true, name: true, image: true } } },
+      },
+    },
   })
   if (!group) return NextResponse.json(null)
 

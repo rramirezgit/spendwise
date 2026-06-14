@@ -8,6 +8,7 @@ import type {
   SavingInfo,
   HistoryMonth,
   NewExpense,
+  DailyExpenseInfo,
 } from './types'
 
 async function getJson<T>(url: string): Promise<T> {
@@ -113,6 +114,29 @@ export function useDeleteSaving() {
 
 export const useHistory = () =>
   useQuery({ queryKey: ['budget-history'], queryFn: () => getJson<HistoryMonth[]>('/api/budget/history') })
+
+export const useDaily = (month: string) =>
+  useQuery({
+    queryKey: ['budget-daily', month],
+    queryFn: () => getJson<DailyExpenseInfo[]>(`/api/budget/daily?month=${month}`),
+  })
+
+export function useAddDaily(month: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: { amount: number; category: string; note?: string }) =>
+      send('/api/budget/daily', 'POST', { ...input, month }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['budget-daily', month] }),
+  })
+}
+
+export function useDeleteDaily(month: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => send(`/api/budget/daily/${id}`, 'DELETE'),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['budget-daily', month] }),
+  })
+}
 
 export const useCategories = () =>
   useQuery({

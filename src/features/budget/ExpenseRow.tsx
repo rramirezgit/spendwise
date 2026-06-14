@@ -1,6 +1,7 @@
 'use client'
 
 import { useI18n, useMoney, type TKey } from '@/lib/i18n'
+import { payerColor } from './colors'
 import type { BudgetExpenseInfo, BudgetMember, Category } from './types'
 
 export function payerLabel(
@@ -21,6 +22,7 @@ export function ExpenseRow({
   categories,
   currentUserId,
   onTogglePaid,
+  onCyclePayer,
   onEdit,
   onDelete,
 }: {
@@ -29,18 +31,21 @@ export function ExpenseRow({
   categories: Category[]
   currentUserId: string
   onTogglePaid: () => void
+  onCyclePayer: () => void
   onEdit: () => void
   onDelete: () => void
 }) {
   const { t } = useI18n()
   const money = useMoney()
   const emoji = categories.find((category) => category.id === expense.category)?.emoji ?? '🏷️'
+  const color = payerColor(expense, members)
 
   return (
     <li
       className={`flex items-center gap-2.5 rounded-2xl border px-3 py-2.5 transition-colors ${
         expense.paid ? 'border-emerald-500/20 bg-emerald-500/[0.06]' : 'border-white/[0.05] bg-white/[0.02]'
       }`}
+      style={{ borderLeft: `3px solid ${color}` }}
     >
       <button
         onClick={onTogglePaid}
@@ -55,12 +60,19 @@ export function ExpenseRow({
         ✓
       </button>
 
-      <button onClick={onEdit} className="min-w-0 flex-1 text-left">
-        <p className="truncate text-sm text-zinc-100">{expense.name}</p>
-        <p className="truncate text-xs text-zinc-500">
-          {emoji} {payerLabel(expense, members, currentUserId, t)} · {expense.paid ? t('paid') : t('pending')}
-        </p>
-      </button>
+      <div className="min-w-0 flex-1">
+        <button onClick={onEdit} className="block w-full truncate text-left text-sm text-zinc-100">
+          {emoji} {expense.name}
+        </button>
+        <button
+          onClick={onCyclePayer}
+          className="mt-0.5 flex items-center gap-1.5 rounded-full text-xs text-zinc-400 active:opacity-70"
+        >
+          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
+          {payerLabel(expense, members, currentUserId, t)}
+          <span className="text-zinc-600">· {expense.paid ? t('paid') : t('pending')}</span>
+        </button>
+      </div>
 
       <button onClick={onEdit} className="text-sm font-medium tabular-nums text-zinc-100">
         {money(expense.amount)}
