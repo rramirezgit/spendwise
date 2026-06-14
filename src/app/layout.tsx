@@ -9,9 +9,9 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Spendwise — fast personal expense tracking",
+  title: "Spendwise — shared budget for two",
   description:
-    "Log any expense in two taps. Mobile-first personal expense tracker with instant category classification, built with Next.js, Prisma and TanStack Query.",
+    "One shared monthly budget for couples. Track fixed bills, who pays what, extras and joint savings, with automatic who-owes-whom settlement. Built with Next.js, Prisma and TanStack Query.",
 };
 
 export const viewport: Viewport = {

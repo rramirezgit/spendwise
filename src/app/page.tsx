@@ -1,5 +1,5 @@
-import { ExpenseApp } from '@/features/expenses/ExpenseApp'
+import { BudgetApp } from '@/features/budget/BudgetApp'
 
 export default function Home() {
-  return <ExpenseApp />
+  return <BudgetApp />
 }

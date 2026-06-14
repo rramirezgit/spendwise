@@ -8,23 +8,18 @@ datasource db {
 }
 
 model User {
-  id            String             @id @default(cuid())
-  email         String             @unique
+  id            String          @id @default(cuid())
+  email         String          @unique
   name          String?
   image         String?
   emailVerified DateTime?
   accounts      Account[]
   sessions      Session[]
-  expenses      Expense[]
-  incomes       Income[]
-  recurring     RecurringExpense[]
-  plans         Installment[]
-  fixedPayments FixedPayment[]
-  savings       Saving[]
-  ownedGroups   Group[]             @relation("GroupOwner")
+  ownedGroups   Group[]         @relation("GroupOwner")
   memberships   GroupMember[]
-  groupPaid     GroupExpense[]      @relation("GroupExpensePayer")
-  groupShares   GroupExpenseShare[] @relation("GroupShareUser")
+  budgetPaid    BudgetExpense[] @relation("BudgetPayer")
+  fixedPaid     FixedItem[]     @relation("FixedPayer")
+  savingsBy     GroupSaving[]   @relation("SavingBy")
 }
 
 model Account {
@@ -59,96 +54,17 @@ model VerificationToken {
   @@id([identifier, token])
 }
 
-model Expense {
-  id        String   @id @default(cuid())
-  amount    Int
-  note      String?
-  category  String
-  spentAt   DateTime @default(now())
-  createdAt DateTime @default(now())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, spentAt])
-}
-
-model Income {
-  id         String   @id @default(cuid())
-  amount     Int
-  source     String?
-  recurring  Boolean  @default(false)
-  receivedAt DateTime @default(now())
-  createdAt  DateTime @default(now())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, receivedAt])
-}
-
-model RecurringExpense {
-  id        String         @id @default(cuid())
-  amount    Int
-  category  String
-  note      String?
-  active    Boolean        @default(true)
-  createdAt DateTime       @default(now())
-  userId    String
-  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  payments  FixedPayment[]
-
-  @@index([userId])
-}
-
-model FixedPayment {
-  id          String           @id @default(cuid())
-  recurringId String
-  month       String
-  paidAt      DateTime         @default(now())
-  userId      String
-  recurring   RecurringExpense @relation(fields: [recurringId], references: [id], onDelete: Cascade)
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([recurringId, month])
-  @@index([userId, month])
-}
-
-model Installment {
-  id          String   @id @default(cuid())
-  description String
-  totalAmount Int
-  count       Int
-  startMonth  DateTime @default(now())
-  category    String
-  createdAt   DateTime @default(now())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-model Saving {
-  id        String   @id @default(cuid())
-  amount    Int
-  note      String?
-  kind      String   @default("deposit")
-  savedAt   DateTime @default(now())
-  createdAt DateTime @default(now())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, savedAt])
-}
-
 model Group {
-  id         String         @id @default(cuid())
+  id         String          @id @default(cuid())
   name       String
-  emoji      String         @default("🏠")
-  inviteCode String         @unique
-  createdAt  DateTime       @default(now())
+  inviteCode String          @unique
+  createdAt  DateTime        @default(now())
   ownerId    String
-  owner      User           @relation("GroupOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  owner      User            @relation("GroupOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   members    GroupMember[]
-  expenses   GroupExpense[]
+  fixedItems FixedItem[]
+  expenses   BudgetExpense[]
+  savings    GroupSaving[]
 }
 
 model GroupMember {
@@ -163,31 +79,56 @@ model GroupMember {
   @@index([userId])
 }
 
-model GroupExpense {
-  id          String              @id @default(cuid())
+model FixedItem {
+  id        String   @id @default(cuid())
+  groupId   String
+  name      String
+  amount    Int
+  category  String
+  payerId   String?
+  splitPaid Boolean  @default(false)
+  sortOrder Int      @default(0)
+  archived  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  payer     User?    @relation("FixedPayer", fields: [payerId], references: [id])
+
+  @@index([groupId])
+}
+
+model BudgetExpense {
+  id          String    @id @default(cuid())
   groupId     String
-  payerId     String
-  amount      Int
-  description String
-  category    String
   month       String
-  paid        Boolean             @default(false)
-  spentAt     DateTime            @default(now())
-  createdAt   DateTime            @default(now())
-  group       Group               @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  payer       User                @relation("GroupExpensePayer", fields: [payerId], references: [id], onDelete: Cascade)
-  shares      GroupExpenseShare[]
+  name        String
+  amount      Int
+  category    String
+  note        String?
+  payerId     String?
+  splitPaid   Boolean   @default(false)
+  paid        Boolean   @default(false)
+  paidAt      DateTime?
+  isFixed     Boolean   @default(false)
+  fixedItemId String?
+  spentAt     DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+  group       Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  payer       User?     @relation("BudgetPayer", fields: [payerId], references: [id])
 
   @@index([groupId, month])
 }
 
-model GroupExpenseShare {
-  id        String       @id @default(cuid())
-  expenseId String
-  userId    String
+model GroupSaving {
+  id        String   @id @default(cuid())
+  groupId   String
   amount    Int
-  expense   GroupExpense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
-  user      User         @relation("GroupShareUser", fields: [userId], references: [id], onDelete: Cascade)
+  kind      String   @default("deposit")
+  note      String?
+  byUserId  String?
+  savedAt   DateTime @default(now())
+  createdAt DateTime @default(now())
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  by        User?    @relation("SavingBy", fields: [byUserId], references: [id])
 
-  @@index([expenseId])
+  @@index([groupId, savedAt])
 }
