@@ -4,18 +4,28 @@ import { useMemo, useState } from 'react'
 import { PieChart, Pie, Cell } from 'recharts'
 import { useI18n, useMoney } from '@/lib/i18n'
 import { formatDayLabel } from '@/lib/format'
-import { useDaily, useAddDaily, useDeleteDaily, useCategories } from './queries'
+import { useDaily, useAddDaily, useUpdateDaily, useDeleteDaily, useCategories } from './queries'
 import { SheetShell, useAmount } from './keypad'
 import { CategoryPicker, catLabel } from './CategoryPicker'
 import { chartColor } from './colors'
+import type { DailyExpenseInfo } from './types'
+
+interface DailyDraft {
+  amount: number
+  category: string
+  note: string
+}
 
 export function ControlTab({ month }: { month: string }) {
   const { t, locale } = useI18n()
   const money = useMoney()
   const { data: items = [], isPending } = useDaily(month)
   const { data: categories = [] } = useCategories()
+  const add = useAddDaily(month)
+  const update = useUpdateDaily(month)
   const remove = useDeleteDaily(month)
   const [adding, setAdding] = useState(false)
+  const [editing, setEditing] = useState<DailyExpenseInfo | null>(null)
 
   const { total, slices } = useMemo(() => {
     const byCategory = new Map<string, number>()
@@ -101,13 +111,15 @@ export function ControlTab({ month }: { month: string }) {
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-lg">
                   {category?.emoji ?? '🏷️'}
                 </span>
-                <div className="min-w-0 flex-1">
+                <button onClick={() => setEditing(item)} className="min-w-0 flex-1 text-left">
                   <p className="truncate text-sm text-zinc-100">
                     {item.note || (category ? catLabel(category.name, t) : '—')}
                   </p>
                   <p className="text-xs text-zinc-500">{formatDayLabel(item.spentAt, locale)}</p>
-                </div>
-                <span className="text-sm font-medium tabular-nums text-zinc-100">{money(item.amount)}</span>
+                </button>
+                <button onClick={() => setEditing(item)} className="text-sm font-medium tabular-nums text-zinc-100">
+                  {money(item.amount)}
+                </button>
                 <button
                   onClick={() => remove.mutate(item.id)}
                   aria-label={t('delete')}
@@ -128,21 +140,47 @@ export function ControlTab({ month }: { month: string }) {
         ＋ {t('add_daily')}
       </button>
 
-      {adding && <DailyExpenseSheet month={month} onClose={() => setAdding(false)} />}
+      {adding && (
+        <DailyExpenseSheet
+          title={t('new_daily')}
+          onClose={() => setAdding(false)}
+          onSubmit={(draft) => add.mutate({ amount: draft.amount, category: draft.category, note: draft.note || undefined })}
+        />
+      )}
+
+      {editing && (
+        <DailyExpenseSheet
+          title={t('new_daily')}
+          initial={{ amount: editing.amount, category: editing.category, note: editing.note ?? '' }}
+          onClose={() => setEditing(null)}
+          onSubmit={(draft) =>
+            update.mutate({ id: editing.id, amount: draft.amount, category: draft.category, note: draft.note || null })
+          }
+        />
+      )}
     </div>
   )
 }
 
-function DailyExpenseSheet({ month, onClose }: { month: string; onClose: () => void }) {
+function DailyExpenseSheet({
+  title,
+  initial,
+  onClose,
+  onSubmit,
+}: {
+  title: string
+  initial?: DailyDraft
+  onClose: () => void
+  onSubmit: (draft: DailyDraft) => void
+}) {
   const { t } = useI18n()
-  const { cents, press } = useAmount()
-  const [note, setNote] = useState('')
-  const [category, setCategory] = useState('')
-  const add = useAddDaily(month)
+  const { cents, press } = useAmount(initial ? (initial.amount / 100).toString() : '')
+  const [note, setNote] = useState(initial?.note ?? '')
+  const [category, setCategory] = useState(initial?.category ?? '')
 
   return (
     <SheetShell
-      title={t('new_daily')}
+      title={title}
       onClose={onClose}
       cents={cents}
       accent="#10b981"
@@ -150,7 +188,7 @@ function DailyExpenseSheet({ month, onClose }: { month: string; onClose: () => v
       canSave={cents > 0 && category.length > 0}
       saveLabel={t('add_daily')}
       onSave={() => {
-        add.mutate({ amount: cents, category, note: note.trim() || undefined })
+        onSubmit({ amount: cents, category, note: note.trim() })
         onClose()
       }}
       fields={

@@ -7,7 +7,17 @@ import { LanguageProvider } from '@/lib/i18n'
 
 export function Providers({ children }: { children: ReactNode }) {
   const [client] = useState(
-    () => new QueryClient({ defaultOptions: { queries: { staleTime: 30_000 } } })
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 2_000,
+            refetchInterval: 5_000,
+            refetchIntervalInBackground: false,
+            refetchOnWindowFocus: true,
+          },
+        },
+      })
   )
   return (
     <SessionProvider>

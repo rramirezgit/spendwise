@@ -5,13 +5,14 @@ export interface DefaultCategory {
 
 export const DEFAULT_CATEGORIES: DefaultCategory[] = [
   { name: 'food', emoji: '🍔' },
+  { name: 'outings', emoji: '🍻' },
   { name: 'groceries', emoji: '🛒' },
   { name: 'transport', emoji: '🚗' },
-  { name: 'home', emoji: '🏠' },
+  { name: 'errands', emoji: '📄' },
   { name: 'health', emoji: '💊' },
-  { name: 'fun', emoji: '🎉' },
-  { name: 'shopping', emoji: '🛍️' },
+  { name: 'home', emoji: '🏠' },
   { name: 'bills', emoji: '🧾' },
+  { name: 'shopping', emoji: '🛍️' },
   { name: 'other', emoji: '✨' },
 ]
 

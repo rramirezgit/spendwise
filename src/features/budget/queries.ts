@@ -130,6 +130,15 @@ export function useAddDaily(month: string) {
   })
 }
 
+export function useUpdateDaily(month: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: { id: string; amount?: number; category?: string; note?: string | null }) =>
+      send(`/api/budget/daily/${input.id}`, 'PATCH', input),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['budget-daily', month] }),
+  })
+}
+
 export function useDeleteDaily(month: string) {
   const queryClient = useQueryClient()
   return useMutation({
