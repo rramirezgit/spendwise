@@ -9,32 +9,30 @@
 <h1 align="center">Spendwise</h1>
 
 <p align="center">
-  <strong>Log any expense in two taps.</strong><br/>
-  <em>A mobile-first personal expense tracker — full-stack Next.js, Prisma and optimistic UI.</em>
+  <strong>A shared monthly budget, in daily production use.</strong><br/>
+  <em>A mobile-first expense tracker — full-stack Next.js and Prisma.</em>
 </p>
-
-![Spendwise demo](docs/demo.gif)
 
 ---
 
 ## What it demonstrates
 
-A **full-stack** Next.js app (front and back in one codebase) focused on the one metric that matters in an expense tracker: how fast you can log a spend.
+A **full-stack** Next.js app (front and back in one codebase) built around fast expense entry and honest money math.
 
-- **Two-tap entry** — a custom numeric keypad, one-tap category chips and instant save. No forms, no friction.
-- **Optimistic UI** — TanStack Query inserts the expense into the cache before the request resolves and rolls back on error, so the list and monthly total update instantly.
+- **Fast entry** — a custom numeric keypad with one-tap category chips; the daily-spend flow saves in as few as 3 taps when the default category applies.
 - **Mobile-first** — thumb-friendly keypad, floating action button, safe-area aware, works the same on web and phone.
 - **Visual classification** — nine categories with emoji + color, a monthly donut breakdown (Recharts) and day-grouped history.
-- **Money as integers** — amounts stored in cents to avoid floating-point errors.
+- **Money as integers** — amounts stored in cents (`Int` in the schema, not `Float`) to avoid floating-point rounding errors.
+- **Server state via TanStack Query**, with cache invalidation on every mutation — reads always reflect the latest write. (Optimistic updates with rollback are a natural next step here, not yet implemented.)
 
 ## Architecture
 
 This is the canonical "Next.js is full-stack" setup — **no separate backend**:
 
-- **UI + API in one app**: React components render the client; Route Handlers (`app/api/expenses`) are the backend, validated with Zod and persisted with Prisma. On Vercel they deploy as serverless functions automatically.
-- **Data layer**: TanStack Query owns server state with optimistic add/delete mutations; React state only holds UI.
+- **UI + API in one app**: React components render the client; Route Handlers (`app/api/budget/*`) are the backend, validated with Zod and persisted with Prisma. On Vercel they deploy as serverless functions automatically.
+- **Data layer**: TanStack Query owns server state; every mutation invalidates and refetches on success. React state only holds UI.
 - **Database**: Prisma + PostgreSQL (Neon in production). SQLite locally so the app runs with zero external setup.
-- **Feature-based structure**: `src/features/expenses` is self-contained; `src/lib` holds Prisma, categories, formatting.
+- **Feature-based structure**: `src/features/budget` is self-contained; `src/lib` holds Prisma, categories, formatting.
 
 ## Run locally
 
